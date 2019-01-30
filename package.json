@@ -1,0 +1,17 @@
+{
+  "name": "yee",
+  "version": "0.0.1",
+  "description": "cross-platform web traffic analyzer like fiddler",
+  "main": "index.js",
+  "directories": {
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+  },
+  "keywords": [
+    "proxy"
+  ],
+  "author": "rexzheng",
+  "license": "MIT"
+}
