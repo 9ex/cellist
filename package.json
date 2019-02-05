@@ -3,15 +3,37 @@
   "version": "0.0.1",
   "description": "cross-platform web traffic analyzer like fiddler",
   "main": "index.js",
-  "directories": {
+  "directories": {},
+  "dependencies": {
+    "debug": "^4.1.1"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "jest": "^24.0.0",
+    "proxy-agent": "^3.0.3",
+    "superagent": "^4.1.0"
+  },
   "scripts": {
+    "test": "jest"
   },
   "keywords": [
     "proxy"
   ],
   "author": "rexzheng",
-  "license": "MIT"
+  "license": "MIT",
+  "jest": {
+    "testMatch": [
+      "**/test/**/*.js",
+      "!**/test/helper/*.js"
+    ],
+    "bail": true,
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "**/src/*.js"
+    ],
+    "coverageReporters": [
+      "text-summary",
+      "lcov"
+    ]
+  }
 }
