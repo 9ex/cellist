@@ -27,7 +27,6 @@
     ],
     "bail": true,
     "testEnvironment": "node",
-    "collectCoverage": true,
     "collectCoverageFrom": [
       "**/src/*.js"
     ],
