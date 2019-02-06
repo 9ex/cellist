@@ -279,7 +279,8 @@ async function invoke(ctx, req, reqBody) {
         hostname: req.hostname,
         port: req.port,
         method: req.method,
-        headers: req.headers
+        headers: req.headers,
+        path: req.path
     };
     let replier = await sendRequest(options, reqBody || req[RAW]);
     let res = new Response(replier);
