@@ -18,7 +18,6 @@ describe('proxy.basic', () => {
             .end((err, clientReceived, serverReceived) => {
                 assert.ifError(err);
                 
-                assert.ifError(serverReceived.error);
                 assert.equal(serverReceived.method, 'POST');
                 assert.equal(serverReceived.path, '/page?id=123');
                 assert.equal(serverReceived.headers['X-Extended-Key'], 'xyz');
