@@ -26,12 +26,19 @@ http.METHODS.forEach(method => {
     };
 });
 
-Object.defineProperty(Response.prototype, 'headers', {
-    get: function () {
-        return this._headers;
+Object.defineProperties(Response.prototype, {
+    statusMessage: {
+        get: function () {
+            return this.res.statusMessage;
+        }
     },
-    set: function () {
-        this._headers = getHeaders(this.res.rawHeaders);
+    headers: {
+        get: function () {
+            return this._headers;
+        },
+        set: function () {
+            this._headers = getHeaders(this.res.rawHeaders);
+        }
     }
 });
 Response.prototype.headers
