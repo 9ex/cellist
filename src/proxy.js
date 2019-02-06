@@ -157,6 +157,24 @@ class Message {
         }
     }
 
+    /**
+     * get headers
+     */
+    get headers() {
+        let headers = this[HEADERS];
+        let result = {};
+        for (let key in headers) {
+            let header = headers[key];
+            let count = header.values.length;
+            if (count === 1) {
+                result[header.name] = header.values[0];
+            } else if (count > 1) {
+                result[header.name] = header.values;
+            }
+        }
+        return result;
+    }
+
     addTamper(handler) {
         if (typeof handler !== 'function') {
             throw new TypeError('tamper handler must be a function');
@@ -177,24 +195,6 @@ class Message {
             handlers = this[RESPONDER] = [];
         }
         handlers.push(handler);
-    }
-
-    /**
-     * get headers
-     */
-    get headers() {
-        let headers = this[HEADERS];
-        let result = {};
-        for (let key in headers) {
-            let header = headers[key];
-            let count = header.values.length;
-            if (count === 1) {
-                result[header.name] = header.values[0];
-            } else if (count > 1) {
-                result[header.name] = header.values;
-            }
-        }
-        return result;
     }
 
     get greedy() {
@@ -274,7 +274,14 @@ async function receive(ctx) {
 }
 
 async function invoke(ctx, req, reqBody) {
-    let replier = await sendRequest(req, reqBody || req[RAW]);
+    let options = {
+        host: req.host,
+        hostname: req.hostname,
+        port: req.port,
+        method: req.method,
+        headers: req.headers
+    };
+    let replier = await sendRequest(options, reqBody || req[RAW]);
     let res = new Response(replier);
     ctx.service.emit('response', res);
 
