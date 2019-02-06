@@ -265,7 +265,7 @@ async function receive(ctx) {
     let req = new Request(ctx.reader);
     ctx.service.emit('request', req);
 
-    let { res, resBody, srcBody } = await addin(req);
+    let { res, resBody, srcBody } = await executeExtensions(req);
     if (res) {
         reply(ctx, res, resBody);
     } else {
@@ -286,7 +286,7 @@ async function invoke(ctx, req, reqBody) {
     let res = new Response(replier);
     ctx.service.emit('response', res);
 
-    let { res: res2, resBody, srcBody } = await addin(res);
+    let { res: res2, resBody, srcBody } = await executeExtensions(res);
     reply(ctx, res2 || res, resBody || srcBody);
 }
 
@@ -303,7 +303,7 @@ function reply(ctx, res, body) {
     }
 }
 
-async function addin(msg) {
+async function executeExtensions(msg) {
     let res;
     let resBody;
     let srcBody;
@@ -312,13 +312,13 @@ async function addin(msg) {
         srcBody = await readAll(msg[RAW], MAX_BUFFER_SIZE);
     }
     if (typeof msg.tamper === 'function') {
-        let ret = msg.tamper(srcBody, msg);
+        let ret = await msg.tamper(srcBody, msg);
         if (typeof ret === 'string' || ret instanceof Buffer) {
             srcBody = ret;
         }
     }
     if (typeof msg.responder === 'function') {
-        let ret = msg.responder(srcBody, msg);
+        let ret = await msg.responder(srcBody, msg);
         if (ret && typeof ret === 'object') {
             if (!ret.headers) {
                 ret.headers = {};
