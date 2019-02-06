@@ -4,6 +4,7 @@ const proxyAgent = require('proxy-agent');
 const Agent = superagent.agent;
 const Proxy = require('../../src/proxy');
 const Request = superagent.Request;
+const Response = superagent.Response;
 
 class TransAgent extends Agent {
     constructor(proxy) {
@@ -13,17 +14,27 @@ class TransAgent extends Agent {
 }
 
 http.METHODS.forEach(method => {
-    TransAgent.prototype[method.toLowerCase()] = function(path) {
-      let req = new Transceiver(this.proxy, method, path);
-  
-      req.on('response', this._saveCookies.bind(this));
-      req.on('redirect', this._saveCookies.bind(this));
-      req.on('redirect', this._attachCookies.bind(this, req));
-      this._attachCookies(req);
-  
-      return req;
+    TransAgent.prototype[method.toLowerCase()] = function (path) {
+        let req = new Transceiver(this.proxy, method, path);
+
+        req.on('response', this._saveCookies.bind(this));
+        req.on('redirect', this._saveCookies.bind(this));
+        req.on('redirect', this._attachCookies.bind(this, req));
+        this._attachCookies(req);
+
+        return req;
     };
-  });
+});
+
+Object.defineProperty(Response.prototype, 'headers', {
+    get: function () {
+        return this._headers;
+    },
+    set: function () {
+        this._headers = getHeaders(this.res.rawHeaders);
+    }
+});
+Response.prototype.headers
 
 class Transceiver extends Request {
     constructor(proxy, method, path) {
@@ -52,7 +63,7 @@ class Transceiver extends Request {
             if (this.proxy instanceof Proxy) {
                 this.proxy.close();
             }
-            fn(err, this.server.request, res);
+            fn(err, res, this.server.request);
         });
         return this;
     }
@@ -64,14 +75,16 @@ class MockServer {
     }
     reply(options) {
         if (typeof options === 'string') {
-            options = { body: options };
+            options = {
+                body: options
+            };
         }
-        this._server.once('request', async(req, res) => {
+        this._server.once('request', async (req, res) => {
             try {
                 let request = {
                     httpVersion: req.httpVersion,
                     method: req.method,
-                    url: req.url,
+                    path: req.url,
                     headers: getHeaders(req.rawHeaders)
                 };
                 let body = await readAll(req);
@@ -129,7 +142,7 @@ function getUrl(addr, protocol) {
     if (!addr) {
         throw new TypeError('invalid address');
     }
-    
+
     let host;
     if (addr.family === 'IPv4') {
         host = addr.address === '0.0.0.0' ? '127.0.0.1' : addr.address;
