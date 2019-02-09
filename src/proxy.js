@@ -121,7 +121,7 @@ class Message {
    * @param {string} name
    */
   header(name) {
-    if (!name || typeof name !== 'string') {
+    if (typeof name !== 'string') {
       throw new TypeError('name must be a string');
     }
 
@@ -131,12 +131,49 @@ class Message {
   }
 
   /**
+   * Check specified name of header is set, case insensitive.
+   * @param {string} name
+   */
+  hasHeader(name) {
+    if (typeof name !== 'string') {
+      throw new TypeError('name must be a string');
+    }
+
+    return name.toLowerCase() in this[HEADERS];
+  }
+
+  /**
    * set header value
    * @param {string} name
    * @param {string|string[]} value
    */
   setHeader(name, value) {
-    if (!name || typeof name !== 'string') {
+    if (typeof name !== 'string') {
+      throw new TypeError('name must be a string');
+    }
+
+    let headers = this[HEADERS];
+    let lname = name.toLowerCase();
+    let header = headers[lname];
+    if (!header) {
+      header = headers[lname] = { name };
+    }
+    if (typeof value === 'string') {
+      header.values = [value];
+    } else if (value instanceof Array && value.every(v => typeof v === 'string')) {
+      header.values = value;
+    } else {
+      throw new TypeError('value must be a string or string[]');
+    }
+  }
+
+  /**
+   * append header value
+   * @param {string} name
+   * @param {string|string[]} value
+   */
+  appendHeader(name, value) {
+    if (typeof name !== 'string') {
       throw new TypeError('name must be a string');
     }
 
@@ -152,7 +189,7 @@ class Message {
     if (typeof value === 'string') {
       header.values.push(value);
     } else if (value instanceof Array && value.every(v => typeof v === 'string')) {
-      header.values = value;
+      header.values = header.values.concat(value);
     } else {
       throw new TypeError('value must be a string or string[]');
     }
@@ -259,8 +296,6 @@ async function processRequest(service, reader, writer) {
 }
 
 async function receive(ctx) {
-  // todo: max size limit
-  // todo: pause
   let req = new Request(ctx.reader);
   ctx.service.emit('request', req);
 
@@ -277,6 +312,9 @@ async function receive(ctx) {
 }
 
 async function invoke(ctx, req, reqBody) {
+  if (reqBody !== undefined && req.hasHeader('Content-Length')) {
+    req.setHeader('Content-Length', Buffer.byteLength(reqBody).toString());
+  }
   let options = {
     host: req.host,
     hostname: req.hostname,
@@ -302,8 +340,11 @@ function reply(ctx, res, body) {
   if (res.statusMessage) {
     writer.statusMessage = res.statusMessage;
   }
+  if (body !== undefined && res.hasHeader('Content-Length')) {
+    res.setHeader('Content-Length', Buffer.byteLength(body).toString());
+  }
   writer.writeHead(res.statusCode, res.headers);
-  if (typeof body === 'string' || body instanceof Buffer) {
+  if (body !== undefined) {
     writer.end(body);
   } else {
     res[RAW].pipe(writer);
