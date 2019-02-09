@@ -176,26 +176,24 @@ class Message {
     return result;
   }
 
-  addTamper(handler) {
-    if (typeof handler !== 'function') {
-      throw new TypeError('tamper handler must be a function');
+  get tamper() {
+    return this[TAMPER];
+  }
+  set tamper(fn) {
+    if (fn && typeof fn !== 'function') {
+      throw new TypeError('tamper must be a function');
     }
-    let handlers = this[TAMPER];
-    if (!handlers) {
-      handlers = this[TAMPER] = [];
-    }
-    handlers.push(handler);
+    this[TAMPER] = fn || null;
   }
 
-  addResponder(handler) {
-    if (typeof handler !== 'function') {
-      throw new TypeError('responder handler must be a function');
+  get responder() {
+    return this[RESPONDER];
+  }
+  set responder(fn) {
+    if (fn && typeof fn !== 'function') {
+      throw new TypeError('responder must be a function');
     }
-    let handlers = this[RESPONDER];
-    if (!handlers) {
-      handlers = this[RESPONDER] = [];
-    }
-    handlers.push(handler);
+    this[RESPONDER] = fn || null;
   }
 
   get greedy() {
@@ -320,13 +318,13 @@ async function executeExtensions(msg) {
   if (msg.greedy) {
     srcBody = await readAll(msg[RAW], MAX_BUFFER_SIZE);
   }
-  if (typeof msg.tamper === 'function') {
+  if (msg.tamper) {
     let ret = await msg.tamper(srcBody, msg);
     if (typeof ret === 'string' || ret instanceof Buffer) {
       srcBody = ret;
     }
   }
-  if (typeof msg.responder === 'function') {
+  if (msg.responder) {
     let ret = await msg.responder(srcBody, msg);
     if (ret && typeof ret === 'object') {
       if (!ret.headers) {
