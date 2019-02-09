@@ -1,4 +1,3 @@
-
 const trans = require('../helper/transagent');
 const Proxy = require('../../src/proxy');
 const assert = require('assert');
