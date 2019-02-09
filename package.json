@@ -24,7 +24,8 @@
   },
   "scripts": {
     "test": "jest",
-    "lint": "eslint . --ext .js"
+    "lint": "eslint . --ext .js",
+    "test-cov": "jest --coverage"
   },
   "pre-commit": [
     "lint"
