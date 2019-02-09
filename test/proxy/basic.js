@@ -6,7 +6,7 @@ describe('proxy.basic', () => {
   it('request and response must be properly proxied', async () => {
     let { clientReceived, serverReceived } =
     await trans(new Proxy())
-      .post('/page?id=123')
+      .post('/proxy/basic?id=123')
       .send('Topic 123...')
       .set('X-Extended-Key', 'xyz')
       .reply({
@@ -20,7 +20,7 @@ describe('proxy.basic', () => {
       .ok(res => res.status === 500);
 
     assert.strictEqual(serverReceived.method, 'POST');
-    assert.strictEqual(serverReceived.path, '/page?id=123');
+    assert.strictEqual(serverReceived.path, '/proxy/basic?id=123');
     assert.strictEqual(serverReceived.headers['X-Extended-Key'], 'xyz');
     assert.strictEqual(serverReceived.text, 'Topic 123...');
 
