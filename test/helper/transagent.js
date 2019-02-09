@@ -69,7 +69,10 @@ class Transceiver extends Request {
       if (this.proxy instanceof Proxy) {
         this.proxy.close();
       }
-      fn(err, res, this.server.request);
+      fn(err, {
+        clientReceived: res,
+        serverReceived: this.server.request
+      });
     });
     return this;
   }
