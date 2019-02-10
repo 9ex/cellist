@@ -1,6 +1,6 @@
 const http = require('http');
 const EventEmitter = require('events');
-const requestHandler = require('./request').handler;
+const handler = require('./handler');
 
 const DEFAULT_TIMEOUT = 2 * 3600 * 1000;
 
@@ -49,7 +49,7 @@ class Proxy extends EventEmitter {
     try {
       let opt = this[OPTIONS];
       opt.server = http.createServer()
-        .on('request', requestHandler.bind(undefined, this))
+        .on('request', handler.request.bind(undefined, this))
         .on('clientError', (err, socket) => {
           this.emit('error', err);
           socket && socket.end();
